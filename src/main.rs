@@ -15,6 +15,20 @@ fn cin_vec<T>() -> Vec<T>
 }
 
 fn main() {
-    let npq = cin_vec::<String>();
-    println!("n: {}, p: {}, q: {}", npq[0], npq[1], npq[2]);
+    let n: usize = cin().parse().unwrap();
+    let s = cin_vec::<i32>();
+    let t = cin_vec::<i32>();
+
+    let mut ans = vec![0; n as usize];
+    for i in 0..n {
+        ans[i] = t[i];
+    }
+
+    for i in 0..2*n {
+        ans[(i + 1) % n] = std::cmp::min(ans[(i + 1) % n], ans[i % n] + s[i % n]);
+    }
+
+    for i in 0..n {
+        println!("{}", ans[i]);
+    }
 }
