@@ -17,52 +17,31 @@ where
         .collect()
 }
 
-struct HashMapForSolve {
-    v: HashMap<i32, i32>
-}
+fn main() {
+    let s: Vec<char> = cin().chars().collect();
+    let MOD = 1e9 as i32 + 7;
+    let chars = ['c', 'h', 'o', 'k', 'u', 'd', 'a', 'i'];
+    let mut dp: HashMap<String, Vec<i32>> = HashMap::new();
+    let chokudai = "chokudai";
+    for i in 0..chokudai.len() + 1 {
+        dp.insert(
+            chokudai.get(0..i).unwrap().to_string(),
+            if i == 0 { vec![1; s.len() + 1]} else { vec![0; s.len() + 1] }
+        );
+    }
 
-impl HashMapForSolve {
-    fn new() -> HashMapForSolve {
-        HashMapForSolve {
-            v: HashMap::<i32, i32>::new()
+    for (c_i, c) in chars.iter().enumerate() {
+        for i in 0..s.len() {
+            let now_str = chokudai.get(0..c_i + 1).unwrap();
+            dp.get_mut(now_str).unwrap()[i + 1] = dp[now_str][i];
+            if s[i] == *c {
+                let prev_str = chokudai.get(0..c_i).unwrap();
+                dp.get_mut(now_str).unwrap()[i + 1] = (dp[now_str][i + 1] + dp.get(prev_str).unwrap()[i]) % MOD;
+            }
         }
     }
 
-    fn insert(&mut self, k: i32) -> () {
-        *self.v.entry(k).or_insert(0) += 1;
-    }
+    // println!("{:#?}", dp);
 
-    fn remove(&mut self, k: &i32) -> () {
-        match self.v.remove(k).unwrap() {
-            1 => (),
-            v => { self.v.insert(*k, v - 1); }
-        };
-    }
-
-    fn len(&self) -> usize {
-        self.v.len()
-    }
-}
-
-fn main() {
-    let (n, k) = {
-        let nk = cin_vec::<usize>();
-        (nk[0], nk[1])
-    };
-    let c = cin_vec::<i32>();
-
-    let mut color_set = HashMapForSolve::new();
-    for i in 0..k {
-        color_set.insert(c[i]);
-    }
-
-    let mut ans = color_set.len();
-
-    for i in k..n {
-        color_set.insert(c[i]);
-        color_set.remove(&c[i - k]);
-        ans = std::cmp::max(ans, color_set.len());
-    }
-
-    println!("{}", ans);
+    println!("{}", dp.get("chokudai").unwrap()[s.len()] % MOD);
 }
