@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 fn cin() -> String {
     let mut buf = String::new();
@@ -17,40 +17,52 @@ where
         .collect()
 }
 
+struct HashMapForSolve {
+    v: HashMap<i32, i32>
+}
+
+impl HashMapForSolve {
+    fn new() -> HashMapForSolve {
+        HashMapForSolve {
+            v: HashMap::<i32, i32>::new()
+        }
+    }
+
+    fn insert(&mut self, k: i32) -> () {
+        *self.v.entry(k).or_insert(0) += 1;
+    }
+
+    fn remove(&mut self, k: &i32) -> () {
+        match self.v.remove(k).unwrap() {
+            1 => (),
+            v => { self.v.insert(*k, v - 1); }
+        };
+    }
+
+    fn len(&self) -> usize {
+        self.v.len()
+    }
+}
+
 fn main() {
-    let hwn = cin_vec::<usize>();
-    let (_h, _w, n) = (hwn[0], hwn[1], hwn[2]);
-    let mut row = vec![0; n];
-    let mut column = vec![0; n];
-    for i in 0..n {
-        let ab = cin_vec::<i32>();
-        row[i] = ab[0];
-        column[i] = ab[1];
+    let (n, k) = {
+        let nk = cin_vec::<usize>();
+        (nk[0], nk[1])
+    };
+    let c = cin_vec::<i32>();
+
+    let mut color_set = HashMapForSolve::new();
+    for i in 0..k {
+        color_set.insert(c[i]);
     }
 
-    let mut sorted_row = row.clone();
-    sorted_row.sort();
-    let row_compress: HashMap<i32, i32> = sorted_row
-        .iter()
-        .enumerate()
-        .map(|(i, v)| (*v, (i+1) as i32))
-        .collect();
+    let mut ans = color_set.len();
 
-    let mut sorted_column = column.clone();
-    sorted_column.sort();
-    let column_compress: HashMap<i32, i32> = sorted_column
-        .iter()
-        .enumerate()
-        .map(|(i, v)| (*v, (i+1) as i32))
-        .collect();
-
-    println!("{:#?}", row_compress);
-
-    for i in 0..n {
-        println!(
-            "{} {}",
-            row_compress.get(&row[i]).unwrap(),
-            column_compress.get(&column[i]).unwrap()
-        );
+    for i in k..n {
+        color_set.insert(c[i]);
+        color_set.remove(&c[i - k]);
+        ans = std::cmp::max(ans, color_set.len());
     }
+
+    println!("{}", ans);
 }
