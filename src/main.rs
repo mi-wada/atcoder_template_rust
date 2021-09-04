@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 fn cin() -> String {
     let mut buf = String::new();
@@ -18,30 +18,30 @@ where
 }
 
 fn main() {
-    let s: Vec<char> = cin().chars().collect();
-    let MOD = 1e9 as i32 + 7;
-    let chars = ['c', 'h', 'o', 'k', 'u', 'd', 'a', 'i'];
-    let mut dp: HashMap<String, Vec<i32>> = HashMap::new();
-    let chokudai = "chokudai";
-    for i in 0..chokudai.len() + 1 {
-        dp.insert(
-            chokudai.get(0..i).unwrap().to_string(),
-            if i == 0 { vec![1; s.len() + 1]} else { vec![0; s.len() + 1] }
-        );
-    }
+    let (n, k) = {
+        let nk = cin_vec::<usize>();
+        (nk[0], nk[1])
+    };
+    let a = cin_vec::<i32>();
+    let a_sorted = {
+        let mut res = a.clone();
+        res.sort();
+        res
+    };
+    let a_compressed: HashMap<i32, usize> = a_sorted
+        .iter()
+        .enumerate()
+        .map(|(idx, v)| (*v, idx))
+        .collect();
 
-    for (c_i, c) in chars.iter().enumerate() {
-        for i in 0..s.len() {
-            let now_str = chokudai.get(0..c_i + 1).unwrap();
-            dp.get_mut(now_str).unwrap()[i + 1] = dp[now_str][i];
-            if s[i] == *c {
-                let prev_str = chokudai.get(0..c_i).unwrap();
-                dp.get_mut(now_str).unwrap()[i + 1] = (dp[now_str][i + 1] + dp.get(prev_str).unwrap()[i]) % MOD;
+    for i in 0..n {
+        println!(
+            "{}",
+            if a_compressed[&a[i]] < k % n {
+                (k / n) as i64 + 1
+            } else {
+                (k / n) as i64
             }
-        }
+        )
     }
-
-    // println!("{:#?}", dp);
-
-    println!("{}", dp.get("chokudai").unwrap()[s.len()] % MOD);
 }
