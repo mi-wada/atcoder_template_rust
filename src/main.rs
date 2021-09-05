@@ -18,27 +18,21 @@ where
 }
 
 fn main() {
-    let (a, b, c) = {
-        let abc = cin_vec::<i32>();
-        (abc[0], abc[1], abc[2])
-    };
-    let ans = if c % 2 == 0 {
-        if a.abs() == b.abs() {
-            '='
-        } else if a.abs() < b.abs() {
-            '<'
-        } else {
-            '>'
-        }
-    } else {
-        if a == b {
-            '='
-        } else if a < b {
-            '<'
-        } else {
-            '>'
-        }
-    };
+    let n: usize = cin().parse().unwrap();
+    let a: Vec<usize> = cin_vec();
+
+    let mut appearances_table: HashMap<usize, usize> = HashMap::new();
+
+    for v in a.iter() {
+        *appearances_table.entry(*v).or_insert(0) += 1;
+    }
+
+    let mut ans = 0;
+
+    for i in 0..n {
+        ans += (n - i) - appearances_table[&a[i]];
+        *appearances_table.get_mut(&a[i]).unwrap() -= 1;
+    }
 
     println!("{}", ans);
 }
