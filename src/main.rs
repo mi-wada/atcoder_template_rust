@@ -18,30 +18,27 @@ where
 }
 
 fn main() {
-    let (n, k) = {
-        let nk = cin_vec::<usize>();
-        (nk[0], nk[1])
+    let (a, b, c) = {
+        let abc = cin_vec::<i32>();
+        (abc[0], abc[1], abc[2])
     };
-    let a = cin_vec::<i32>();
-    let a_sorted = {
-        let mut res = a.clone();
-        res.sort();
-        res
+    let ans = if c % 2 == 0 {
+        if a.abs() == b.abs() {
+            '='
+        } else if a.abs() < b.abs() {
+            '<'
+        } else {
+            '>'
+        }
+    } else {
+        if a == b {
+            '='
+        } else if a < b {
+            '<'
+        } else {
+            '>'
+        }
     };
-    let a_compressed: HashMap<i32, usize> = a_sorted
-        .iter()
-        .enumerate()
-        .map(|(idx, v)| (*v, idx))
-        .collect();
 
-    for i in 0..n {
-        println!(
-            "{}",
-            if a_compressed[&a[i]] < k % n {
-                (k / n) as i64 + 1
-            } else {
-                (k / n) as i64
-            }
-        )
-    }
+    println!("{}", ans);
 }
