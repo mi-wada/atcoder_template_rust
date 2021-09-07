@@ -29,101 +29,64 @@ where
     res
 }
 
-enum BinaryTree {
-    Nil,
-    Node {
-        left: Box<BinaryTree>,
-        right: Box<BinaryTree>,
-        value: usize,
-    },
+#[derive(PartialEq, Eq, Clone)]
+enum Flag {
+    NotVisited,
+    Visited { color: bool },
 }
 
-impl BinaryTree {
-    fn new_node(value: usize) -> BinaryTree {
-        BinaryTree::Node {
-            left: Box::new(BinaryTree::Nil),
-            right: Box::new(BinaryTree::Nil),
-            value,
+impl Flag {
+    fn reverse(&self) -> Flag {
+        match self {
+            Flag::NotVisited => Flag::NotVisited,
+            Flag::Visited { color } => Flag::Visited { color: !color },
         }
     }
 }
-
-impl BinaryTree {
-    fn insert(&mut self, v: usize) {
-        match self {
-            BinaryTree::Nil => *self = BinaryTree::new_node(v),
-            BinaryTree::Node { left, right, value } => {
-                if v < *value {
-                    left.insert(v)
-                } else {
-                    right.insert(v)
-                }
-            }
-        }
-    }
-
-    fn upper(&self, v: usize, res: Option<usize>) -> Option<usize> {
-        match self {
-            BinaryTree::Nil => res,
-            BinaryTree::Node { left, right, value } => {
-                if *value > v {
-                    left.upper(
-                        v,
-                        Some(std::cmp::min(res.unwrap_or(usize::max_value()), *value)),
-                    )
-                } else {
-                    right.upper(v, res)
-                }
-            }
-        }
-    }
-
-    fn lower(&self, v: usize, res: Option<usize>) -> Option<usize> {
-        match self {
-            BinaryTree::Nil => res,
-            BinaryTree::Node { left, right, value } => {
-                if *value < v {
-                    right.lower(
-                        v,
-                        Some(std::cmp::max(res.unwrap_or(usize::min_value()), *value)),
-                    )
-                } else {
-                    left.lower(v, res)
-                }
-            }
-        }
-    }
-}
+// Visitedの中にblackとwhiteがある
 
 fn main() {
-    let (l, q) = {
-        let l_q = cin_vec::<usize>();
-        (l_q[0], l_q[1])
+    let (n, q) = {
+        let n_q = cin_vec::<usize>();
+        (n_q[0], n_q[1])
     };
-
-    let (mut c, mut x) = (vec![], vec![]);
-
+    let mut graph = vec![vec![]; n];
+    for _ in 0..n - 1 {
+        let a_b = cin_vec::<usize>();
+        graph[a_b[0] - 1].push(a_b[1] - 1);
+        graph[a_b[1] - 1].push(a_b[0] - 1);
+    }
+    let mut c = vec![];
+    let mut d = vec![];
     for _ in 0..q {
-        let c_x = cin_vec::<usize>();
-        c.push(c_x[0]);
-        x.push(c_x[1]);
+        let c_d = cin_vec::<usize>();
+        c.push(c_d[0] - 1);
+        d.push(c_d[1] - 1);
     }
 
-    let mut tree = BinaryTree::Nil;
-    tree.insert(0);
-    tree.insert(l);
+    let mut colors = vec![Flag::NotVisited; n];
+    colors[0] = Flag::Visited { color: true };
+    let mut que = std::collections::VecDeque::new();
+    que.push_back(0);
+
+    while let Some(current_i) = que.pop_back() {
+        for next_i in graph[current_i].iter() {
+            match colors[*next_i] {
+                Flag::NotVisited => {
+                    colors[*next_i] = colors[current_i].reverse();
+                }
+                Flag::Visited { color: _ } => continue,
+            }
+
+            que.push_back(*next_i);
+        }
+    }
 
     for i in 0..q {
-        match c[i] {
-            1 => {
-                tree.insert(x[i]);
-            }
-            2 | _ => {
-                println!(
-                    "{}",
-                    tree.upper(x[i], None).unwrap() - tree.lower(x[i], None).unwrap()
-                );
-            }
+        if colors[c[i]] == colors[d[i]] {
+            println!("Town");
+        } else {
+            println!("Road");
         }
     }
 }
