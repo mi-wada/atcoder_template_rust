@@ -29,64 +29,64 @@ where
     res
 }
 
-#[derive(PartialEq, Eq, Clone)]
-enum Flag {
-    NotVisited,
-    Visited { color: bool },
-}
-
-impl Flag {
-    fn reverse(&self) -> Flag {
-        match self {
-            Flag::NotVisited => Flag::NotVisited,
-            Flag::Visited { color } => Flag::Visited { color: !color },
+fn get_nearest_idx(s: &Vec<bool>, target: bool) -> Option<usize> {
+    let mut res = None;
+    for i in 0..s.len() {
+        if s[i] == target {
+            res = match res {
+                None => Some(i),
+                Some(n) => Some(std::cmp::min(n, i)),
+            };
+        }
+        let j = (s.len() - i) % s.len();
+        if s[j] == target {
+            res = match res {
+                None => Some(i),
+                Some(n) => Some(std::cmp::min(n, i)),
+            };
         }
     }
+    res
 }
-// Visitedの中にblackとwhiteがある
 
 fn main() {
-    let (n, q) = {
-        let n_q = cin_vec::<usize>();
-        (n_q[0], n_q[1])
+    let (_n, _m) = {
+        let n_m = cin_vec::<usize>();
+        (n_m[0], n_m[1])
     };
-    let mut graph = vec![vec![]; n];
-    for _ in 0..n - 1 {
-        let a_b = cin_vec::<usize>();
-        graph[a_b[0] - 1].push(a_b[1] - 1);
-        graph[a_b[1] - 1].push(a_b[0] - 1);
-    }
-    let mut c = vec![];
-    let mut d = vec![];
-    for _ in 0..q {
-        let c_d = cin_vec::<usize>();
-        c.push(c_d[0] - 1);
-        d.push(c_d[1] - 1);
-    }
+    let s = cin_vec::<u8>().iter().map(|x| *x == 1).collect();
+    let t: Vec<bool> = cin_vec::<u8>().iter().map(|x| *x == 1).collect();
 
-    let mut colors = vec![Flag::NotVisited; n];
-    colors[0] = Flag::Visited { color: true };
-    let mut que = std::collections::VecDeque::new();
-    que.push_back(0);
+    let mut pos = vec![None; 2];
+    pos[false as usize] = get_nearest_idx(&s, false);
+    pos[true as usize] = get_nearest_idx(&s, true);
 
-    while let Some(current_i) = que.pop_back() {
-        for next_i in graph[current_i].iter() {
-            match colors[*next_i] {
-                Flag::NotVisited => {
-                    colors[*next_i] = colors[current_i].reverse();
-                }
-                Flag::Visited { color: _ } => continue,
-            }
+    let mut ans = 0;
+    let mut is_seeked = false;
+    let mut current_value = s[0];
 
-            que.push_back(*next_i);
-        }
-    }
-
-    for i in 0..q {
-        if colors[c[i]] == colors[d[i]] {
-            println!("Town");
+    for x in t {
+        if current_value == x {
+            ans += 1;
         } else {
-            println!("Road");
+            if !is_seeked {
+                match pos[x as usize] {
+                    None => {
+                        ans = -1;
+                        break;
+                    }
+                    Some(n) => {
+                        ans += n as i32 + 1;
+                    }
+                }
+                is_seeked = true;
+                current_value = x;
+            } else {
+                ans += 2;
+                current_value = !current_value;
+            }
         }
     }
+
+    println!("{}", ans);
 }
