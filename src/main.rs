@@ -29,64 +29,32 @@ where
     res
 }
 
-fn get_nearest_idx(s: &Vec<bool>, target: bool) -> Option<usize> {
-    let mut res = None;
-    for i in 0..s.len() {
-        if s[i] == target {
-            res = match res {
-                None => Some(i),
-                Some(n) => Some(std::cmp::min(n, i)),
-            };
-        }
-        let j = (s.len() - i) % s.len();
-        if s[j] == target {
-            res = match res {
-                None => Some(i),
-                Some(n) => Some(std::cmp::min(n, i)),
-            };
-        }
-    }
-    res
+fn tuple_2<T>(v: Vec<T>) -> (T, T)
+where
+    T: Copy,
+{
+    (v[0], v[1])
 }
 
 fn main() {
-    let (_n, _m) = {
-        let n_m = cin_vec::<usize>();
-        (n_m[0], n_m[1])
-    };
-    let s = cin_vec::<u8>().iter().map(|x| *x == 1).collect();
-    let t: Vec<bool> = cin_vec::<u8>().iter().map(|x| *x == 1).collect();
-
-    let mut pos = vec![None; 2];
-    pos[false as usize] = get_nearest_idx(&s, false);
-    pos[true as usize] = get_nearest_idx(&s, true);
-
-    let mut ans = 0;
-    let mut is_seeked = false;
-    let mut current_value = s[0];
-
-    for x in t {
-        if current_value == x {
-            ans += 1;
-        } else {
-            if !is_seeked {
-                match pos[x as usize] {
-                    None => {
-                        ans = -1;
-                        break;
-                    }
-                    Some(n) => {
-                        ans += n as i32 + 1;
-                    }
-                }
-                is_seeked = true;
-                current_value = x;
-            } else {
-                ans += 2;
-                current_value = !current_value;
-            }
-        }
+    let n: usize = cin().parse().unwrap();
+    let (x, y): (Vec<i32>, Vec<i32>) = (0..n).map(|_| tuple_2(cin_vec::<i32>())).unzip();
+    let mut x_with_idx: Vec<(usize, i32)> = x.into_iter().enumerate().collect();
+    let mut y_with_idx: Vec<(usize, i32)> = y.into_iter().enumerate().collect();
+    x_with_idx.sort_by(|(_a_idx, a), (_b_idx, b)| a.cmp(b));
+    y_with_idx.sort_by(|(_a_idx, a), (_b_idx, b)| a.cmp(b));
+    let mut answer_candidate = vec![
+        x_with_idx[n - 1].1 - x_with_idx[0].1,
+        x_with_idx[n - 1].1 - x_with_idx[1].1,
+        x_with_idx[n - 2].1 - x_with_idx[0].1,
+        y_with_idx[n - 1].1 - y_with_idx[0].1,
+        y_with_idx[n - 1].1 - y_with_idx[1].1,
+        y_with_idx[n - 2].1 - y_with_idx[0].1,
+    ];
+    answer_candidate.sort();
+    if (x_with_idx[0].0, x_with_idx[n - 1].0) == (y_with_idx[0].0, y_with_idx[n - 1].0) {
+        println!("{}", answer_candidate[6 - 3]);
+    } else {
+        println!("{}", answer_candidate[6 - 2]);
     }
-
-    println!("{}", ans);
 }
