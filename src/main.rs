@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{
+    collections::{HashMap, HashSet, VecDeque},
+    iter::FromIterator,
+};
 
 fn cin() -> String {
     let mut buf = String::new();
@@ -29,6 +32,7 @@ where
     res
 }
 
+// TODO: ToTupleトレイトにしてvecに実装しよう
 fn tuple_2<T>(v: Vec<T>) -> (T, T)
 where
     T: Copy,
@@ -36,31 +40,42 @@ where
     (v[0], v[1])
 }
 
-fn dfs(g: &Vec<Vec<usize>>, from_idx: usize, current_idx: usize) {
-    print!("{} ", current_idx + 1);
-
-    for next_idx in g[current_idx].iter() {
-        if *next_idx != from_idx {
-            dfs(g, current_idx, *next_idx);
+fn prime_factors(mut x: usize) -> Vec<usize> {
+    let mut res = Vec::new();
+    for i in 2..=((x as f64).sqrt() as usize + 1) {
+        if x % i == 0 {
+            res.push(i);
+            while x % i == 0 {
+                x /= i;
+            }
         }
     }
-    if !(from_idx == current_idx && from_idx == 0) {
-        print!("{} ", from_idx + 1);
+    if x != 1 {
+        res.push(x);
     }
+    res
 }
 
 fn main() {
-    let n: usize = cin().parse().unwrap();
-    let mut graph = vec![vec![]; n];
-    for _ in 0..n - 1 {
-        let a_b: Vec<usize> = cin_vec::<usize>().iter().map(|x| x - 1).collect();
-        graph[a_b[0]].push(a_b[1]);
-        graph[a_b[1]].push(a_b[0]);
-    }
-    for i in 0..n {
-        graph[i].sort();
+    let (n, m) = tuple_2(cin_vec::<usize>());
+    let a = cin_vec::<usize>();
+
+    let mut ans: HashSet<usize> = (1..=m).collect();
+
+    for _a in a {
+        for prime_factor in prime_factors(_a) {
+            if ans.contains(&prime_factor) {
+                let mut mult = 1;
+                while prime_factor * mult <= m {
+                    ans.remove(&(prime_factor * mult));
+                    mult += 1;
+                }
+            }
+        }
     }
 
-    dfs(&graph, 0, 0);
-    println!("");
+    println!("{}", ans.len());
+    let mut ans: Vec<usize> = ans.into_iter().collect();
+    ans.sort();
+    ans.iter().for_each(|x| println!("{}", x));
 }
