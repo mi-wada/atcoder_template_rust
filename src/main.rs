@@ -1,4 +1,4 @@
-use std::cmp;
+use std::collections::HashSet;
 
 #[allow(dead_code)]
 fn cin() -> String {
@@ -54,49 +54,15 @@ where
     }
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let n: usize = cin().parse()?;
-
-    struct Fuse {
-        // [cm]
-        length: f64,
-        // [cm/s]
-        burning_speed: f64,
+    let n = cin().parse::<usize>().unwrap();
+    let mut set = HashSet::new();
+    for _ in 0..n {
+        let l_a = cin_vec::<usize>();
+        set.insert(l_a);
     }
 
-    impl Fuse {
-        fn secs_to_burn_out(&self) -> f64 {
-            self.length / self.burning_speed
-        }
-    }
+    println!("{}", set.len());
 
-    let fuses = (0..n)
-        .map(|_| {
-            let ab = cin_vec().to_2();
-            Fuse {
-                length: ab.0,
-                burning_speed: ab.1,
-            }
-        })
-        .collect::<Vec<Fuse>>();
-
-    let total_secs_to_burn_out = fuses
-        .iter()
-        .fold(0.0, |acc, fuse| acc + fuse.secs_to_burn_out());
-
-    let mut ans = 0.0;
-    let mut i = 0;
-    let mut acc_secs_to_burn = 0.0;
-
-    loop {
-        if acc_secs_to_burn + fuses[i].secs_to_burn_out() > total_secs_to_burn_out / 2.0 {
-            break;
-        }
-        acc_secs_to_burn += fuses[i].secs_to_burn_out();
-        ans += fuses[i].length;
-        i += 1;
-    }
-    ans += (total_secs_to_burn_out / 2.0 - acc_secs_to_burn) * fuses[i].burning_speed;
-    println!("{}", ans);
     Ok(())
 }
 
