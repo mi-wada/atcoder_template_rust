@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+use std::{
+    collections::{HashMap, HashSet, VecDeque},
+    iter::FromIterator,
+};
 
 #[allow(dead_code)]
 fn cin() -> String {
@@ -54,17 +57,64 @@ where
     }
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let n = cin().parse::<usize>().unwrap();
-    let mut set = HashSet::new();
-    for _ in 0..n {
-        let l_a = cin_vec::<usize>();
-        set.insert(l_a);
+    struct WeaponLearning {
+        id: usize,
+        required_time: usize,
+        pub required_weapon: Vec<usize>,
     }
 
-    println!("{}", set.len());
+    let n = cin().parse::<usize>().unwrap();
+    let weapon_learnings = {
+        let mut weapon_learings = HashMap::new();
+        for i in 0..n {
+            let (t, k, a) = {
+                let t_k_a = cin_vec::<usize>();
+                (t_k_a[0], t_k_a[1], t_k_a[2..].to_vec())
+            };
+            weapon_learings.insert(
+                i + 1,
+                WeaponLearning {
+                    id: i + 1,
+                    required_time: t,
+                    required_weapon: a,
+                },
+            );
+        }
+        weapon_learings
+    };
+
+    let mut required_weapons_to_learn_ougi = HashSet::new();
+    required_weapons_to_learn_ougi.insert(n);
+    let mut required_weapon_id_queue = VecDeque::new();
+    required_weapon_id_queue.push_back(n);
+
+    while let Some(next_weapon_id) = required_weapon_id_queue.pop_front() {
+        for required_weapon_id in weapon_learnings
+            .get(&next_weapon_id)
+            .unwrap()
+            .required_weapon
+            .iter()
+        {
+            if !required_weapons_to_learn_ougi.contains(required_weapon_id) {
+                required_weapons_to_learn_ougi.insert(*required_weapon_id);
+                required_weapon_id_queue.push_back(*required_weapon_id);
+            }
+        }
+    }
+
+    let ans: usize = required_weapons_to_learn_ougi
+        .iter()
+        .map(|weapon_id| weapon_learnings.get(weapon_id).unwrap().required_time)
+        .sum();
+
+    println!("{:#?}", ans);
 
     Ok(())
 }
+
+// 3
+// 10 0
+// 10 0
 
 mod perm {
     pub struct PermutationIterator<T: Ord + Clone + Copy> {
