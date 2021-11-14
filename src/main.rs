@@ -57,107 +57,39 @@ where
     }
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    struct WeaponLearning {
-        id: usize,
-        required_time: usize,
-        pub required_weapon: Vec<usize>,
-    }
+    let n: usize = cin().parse()?;
+    let mut ans = 0;
+    // let m = (n as f64).powf(1.0 / 3.0).floor() as usize;
+    // // root^3(n)以下の数を走査すれば十分
+    // for i in 1..=m {
+    //     // root^2(n / i)以下の数を走査すればよい
+    //     for j in i..=(n as f64 / i as f64).powf(0.5).floor() as usize {
+    //         let k_max = (n as f64 / (i as f64 * j as f64)).floor() as usize;
+    //         if k_max < j {
+    //             continue;
+    //         }
+    //         ans += k_max - j + 1;
+    //     }
+    // }
 
-    let n = cin().parse::<usize>().unwrap();
-    let weapon_learnings = {
-        let mut weapon_learings = HashMap::new();
-        for i in 0..n {
-            let (t, k, a) = {
-                let t_k_a = cin_vec::<usize>();
-                (t_k_a[0], t_k_a[1], t_k_a[2..].to_vec())
-            };
-            weapon_learings.insert(
-                i + 1,
-                WeaponLearning {
-                    id: i + 1,
-                    required_time: t,
-                    required_weapon: a,
-                },
-            );
+    // 上の書き方だと小数の誤差によりWA
+
+    for i in 1..=n {
+        if i * i * i > n {
+            break;
         }
-        weapon_learings
-    };
-
-    let mut required_weapons_to_learn_ougi = HashSet::new();
-    required_weapons_to_learn_ougi.insert(n);
-    let mut required_weapon_id_queue = VecDeque::new();
-    required_weapon_id_queue.push_back(n);
-
-    while let Some(next_weapon_id) = required_weapon_id_queue.pop_front() {
-        for required_weapon_id in weapon_learnings
-            .get(&next_weapon_id)
-            .unwrap()
-            .required_weapon
-            .iter()
-        {
-            if !required_weapons_to_learn_ougi.contains(required_weapon_id) {
-                required_weapons_to_learn_ougi.insert(*required_weapon_id);
-                required_weapon_id_queue.push_back(*required_weapon_id);
+        for j in i..=n {
+            if j * j * i > n {
+                break;
             }
+            let k_max = (n as f64 / (i as f64 * j as f64)).floor() as usize;
+            if k_max < j {
+                continue;
+            }
+            ans += k_max - j + 1;
         }
     }
 
-    let ans: usize = required_weapons_to_learn_ougi
-        .iter()
-        .map(|weapon_id| weapon_learnings.get(weapon_id).unwrap().required_time)
-        .sum();
-
-    println!("{:#?}", ans);
-
+    println!("{}", ans);
     Ok(())
-}
-
-// 3
-// 10 0
-// 10 0
-
-mod perm {
-    pub struct PermutationIterator<T: Ord + Clone + Copy> {
-        li: Vec<T>,
-        idx: usize,
-    }
-    impl<T: Ord + Clone + Copy> PermutationIterator<T> {
-        pub fn new(li: Vec<T>) -> PermutationIterator<T> {
-            let idx = 0;
-            PermutationIterator { li, idx }
-        }
-    }
-
-    impl<T: Ord + Clone + Copy> Iterator for PermutationIterator<T> {
-        type Item = Vec<T>;
-
-        fn next(&mut self) -> Option<Self::Item> {
-            if self.idx == self.li.len().pow(self.li.len() as u32) {
-                return None;
-            }
-
-            let res = {
-                let mut res = Vec::with_capacity(self.li.len());
-                let mut idx = self.idx;
-                while res.len() < self.li.len() {
-                    res.push(self.li[idx % self.li.len()]);
-                    idx /= self.li.len();
-                }
-                res.reverse();
-                res
-            };
-            self.idx += 1;
-            Some(res)
-        }
-    }
-
-    pub trait Permutation<T: Ord + Clone + Copy> {
-        fn perutation(self) -> PermutationIterator<T>;
-    }
-
-    impl<T: Ord + Clone + Copy, I: IntoIterator<Item = T>> Permutation<T> for I {
-        fn perutation(self) -> PermutationIterator<T> {
-            PermutationIterator::new(self.into_iter().collect())
-        }
-    }
 }
