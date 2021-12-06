@@ -58,32 +58,38 @@ where
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (n, y) = {
-        let ny = cin_vec::<usize>();
-        (ny[0], ny[1])
-    };
+    let rev_s = cin().chars().rev().collect::<String>();
 
-    let mut ans = None;
+    let rev_parts: Vec<String> = vec![
+        "dream".to_string(),
+        "dreamer".to_string(),
+        "erase".to_string(),
+        "eraser".to_string(),
+    ]
+    .into_iter()
+    .map(|s| s.chars().rev().collect::<String>())
+    .collect();
 
-    for bil_1000 in 0..=n {
-        for bil_5000 in 0..=(n - bil_1000) {
-            let bil_10000 = n - bil_1000 - bil_5000;
-
-            if bil_1000 * 1_000 + bil_5000 * 5_000 + bil_10000 * 10_000 == y {
-                ans = Some((bil_10000, bil_5000, bil_1000));
+    let can_make = {
+        let mut idx = 0;
+        while idx < rev_s.len() {
+            let (_, remaining) = rev_s.split_at(idx);
+            let mut is_contain_part = false;
+            for rev_part in rev_parts.iter() {
+                if remaining.starts_with(rev_part) {
+                    idx += rev_part.len();
+                    is_contain_part = true;
+                    break;
+                }
+            }
+            if !is_contain_part {
                 break;
             }
         }
-    }
+        idx == rev_s.len()
+    };
 
-    match ans {
-        Some(ans) => {
-            println!("{} {} {}", ans.0, ans.1, ans.2);
-        }
-        None => {
-            println!("{} {} {}", -1, -1, -1);
-        }
-    }
+    println!("{}", if can_make { "YES" } else { "NO" });
 
     Ok(())
 }
