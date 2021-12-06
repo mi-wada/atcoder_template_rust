@@ -56,40 +56,34 @@ where
         )
     }
 }
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let n: usize = cin().parse()?;
-    let mut ans = 0;
-    // let m = (n as f64).powf(1.0 / 3.0).floor() as usize;
-    // // root^3(n)以下の数を走査すれば十分
-    // for i in 1..=m {
-    //     // root^2(n / i)以下の数を走査すればよい
-    //     for j in i..=(n as f64 / i as f64).powf(0.5).floor() as usize {
-    //         let k_max = (n as f64 / (i as f64 * j as f64)).floor() as usize;
-    //         if k_max < j {
-    //             continue;
-    //         }
-    //         ans += k_max - j + 1;
-    //     }
-    // }
+    let (n, y) = {
+        let ny = cin_vec::<usize>();
+        (ny[0], ny[1])
+    };
 
-    // 上の書き方だと小数の誤差によりWA
+    let mut ans = None;
 
-    for i in 1..=n {
-        if i * i * i > n {
-            break;
-        }
-        for j in i..=n {
-            if j * j * i > n {
+    for bil_1000 in 0..=n {
+        for bil_5000 in 0..=(n - bil_1000) {
+            let bil_10000 = n - bil_1000 - bil_5000;
+
+            if bil_1000 * 1_000 + bil_5000 * 5_000 + bil_10000 * 10_000 == y {
+                ans = Some((bil_10000, bil_5000, bil_1000));
                 break;
             }
-            let k_max = (n as f64 / (i as f64 * j as f64)).floor() as usize;
-            if k_max < j {
-                continue;
-            }
-            ans += k_max - j + 1;
         }
     }
 
-    println!("{}", ans);
+    match ans {
+        Some(ans) => {
+            println!("{} {} {}", ans.0, ans.1, ans.2);
+        }
+        None => {
+            println!("{} {} {}", -1, -1, -1);
+        }
+    }
+
     Ok(())
 }
