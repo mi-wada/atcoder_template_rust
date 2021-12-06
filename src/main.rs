@@ -57,39 +57,67 @@ where
     }
 }
 
+#[derive(Debug)]
+struct Schedule {
+    t: usize,
+    position: Position,
+}
+
+#[derive(Debug)]
+struct Position {
+    x: i64,
+    y: i64,
+}
+
+impl Position {
+    fn distance_from(&self, other: &Position) -> usize {
+        ((self.x - other.x).abs() + (self.y - other.y).abs()) as usize
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let rev_s = cin().chars().rev().collect::<String>();
+    let n: usize = cin().parse().unwrap();
+    let schedules: Vec<Schedule> = {
+        let mut schedules = vec![Schedule {
+            t: 0,
+            position: Position { x: 0, y: 0 },
+        }];
+        schedules.extend::<Vec<Schedule>>(
+            (0..n)
+                .map(|_| {
+                    let txy = cin_vec::<usize>();
+                    Schedule {
+                        t: txy[0],
+                        position: Position {
+                            x: txy[1] as i64,
+                            y: txy[2] as i64,
+                        },
+                    }
+                })
+                .collect(),
+        );
+        schedules
+    };
 
-    let rev_parts: Vec<String> = vec![
-        "dream".to_string(),
-        "dreamer".to_string(),
-        "erase".to_string(),
-        "eraser".to_string(),
-    ]
-    .into_iter()
-    .map(|s| s.chars().rev().collect::<String>())
-    .collect();
+    let is_possible = {
+        let mut is_possible = true;
+        for i in 0..n {
+            let schedule = &schedules[i];
+            let next_schedule = &schedules[i + 1];
 
-    let can_make = {
-        let mut idx = 0;
-        while idx < rev_s.len() {
-            let (_, remaining) = rev_s.split_at(idx);
-            let mut is_contain_part = false;
-            for rev_part in rev_parts.iter() {
-                if remaining.starts_with(rev_part) {
-                    idx += rev_part.len();
-                    is_contain_part = true;
-                    break;
-                }
-            }
-            if !is_contain_part {
+            if schedule.position.distance_from(&next_schedule.position)
+                > next_schedule.t - schedule.t
+                || schedule.position.distance_from(&next_schedule.position) % 2
+                    != (next_schedule.t - schedule.t) % 2
+            {
+                is_possible = false;
                 break;
             }
         }
-        idx == rev_s.len()
+        is_possible
     };
 
-    println!("{}", if can_make { "YES" } else { "NO" });
+    println!("{}", if is_possible { "Yes" } else { "No" });
 
     Ok(())
 }
