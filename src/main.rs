@@ -38,6 +38,7 @@ where
 trait ToTuple<T> {
     fn to_2(self) -> (T, T);
     fn to_3(self) -> (T, T, T);
+    fn to_4(self) -> (T, T, T, T);
 }
 
 impl<T> ToTuple<T> for Vec<T>
@@ -55,69 +56,57 @@ where
             self.get(2).unwrap().clone(),
         )
     }
+
+    fn to_4(self) -> (T, T, T, T) {
+        (
+            self.get(0).unwrap().clone(),
+            self.get(1).unwrap().clone(),
+            self.get(2).unwrap().clone(),
+            self.get(3).unwrap().clone(),
+        )
+    }
 }
 
-#[derive(Debug)]
-struct Schedule {
-    t: usize,
-    position: Position,
+fn is_overflow(a: usize, b: usize) -> bool {
+    if b == 0 {
+        return false;
+    }
+
+    a > usize::max_value() / b
 }
 
-#[derive(Debug)]
-struct Position {
-    x: i64,
-    y: i64,
-}
-
-impl Position {
-    fn distance_from(&self, other: &Position) -> usize {
-        ((self.x - other.x).abs() + (self.y - other.y).abs()) as usize
+fn solve(
+    num_of_bags: usize,
+    desired: usize,
+    balls_by_bag: &HashMap<usize, Vec<usize>>,
+    bag_i: usize,
+    acc: usize,
+) -> usize {
+    if bag_i == num_of_bags {
+        if desired == acc {
+            1
+        } else {
+            0
+        }
+    } else {
+        let mut ret = 0;
+        for ball in balls_by_bag.get(&bag_i).unwrap() {
+            ret += if is_overflow(acc, *ball) {
+                0
+            } else {
+                solve(num_of_bags, desired, balls_by_bag, bag_i + 1, acc * *ball)
+            };
+        }
+        ret
     }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let n: usize = cin().parse().unwrap();
-    let schedules: Vec<Schedule> = {
-        let mut schedules = vec![Schedule {
-            t: 0,
-            position: Position { x: 0, y: 0 },
-        }];
-        schedules.extend::<Vec<Schedule>>(
-            (0..n)
-                .map(|_| {
-                    let txy = cin_vec::<usize>();
-                    Schedule {
-                        t: txy[0],
-                        position: Position {
-                            x: txy[1] as i64,
-                            y: txy[2] as i64,
-                        },
-                    }
-                })
-                .collect(),
-        );
-        schedules
-    };
+    let (n, x) = cin_vec::<usize>().to_2();
+    let balls_by_bag: HashMap<usize, Vec<usize>> = (0..n)
+        .map(|i| (i, cin_vec::<usize>().into_iter().skip(1).collect()))
+        .collect();
 
-    let is_possible = {
-        let mut is_possible = true;
-        for i in 0..n {
-            let schedule = &schedules[i];
-            let next_schedule = &schedules[i + 1];
-
-            if schedule.position.distance_from(&next_schedule.position)
-                > next_schedule.t - schedule.t
-                || schedule.position.distance_from(&next_schedule.position) % 2
-                    != (next_schedule.t - schedule.t) % 2
-            {
-                is_possible = false;
-                break;
-            }
-        }
-        is_possible
-    };
-
-    println!("{}", if is_possible { "Yes" } else { "No" });
-
+    println!("{}", solve(n, x, &balls_by_bag, 0, 1));
     Ok(())
 }
