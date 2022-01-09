@@ -67,46 +67,20 @@ where
     }
 }
 
-fn is_overflow(a: usize, b: usize) -> bool {
-    if b == 0 {
-        return false;
-    }
+fn solve(k: usize) -> String {
+    let mut ret = String::new();
+    let mut k = k;
+    while k > 0 {
+        ret.push(if k % 2 == 0 { '0' } else { '2' });
 
-    a > usize::max_value() / b
-}
-
-fn solve(
-    num_of_bags: usize,
-    desired: usize,
-    balls_by_bag: &HashMap<usize, Vec<usize>>,
-    bag_i: usize,
-    acc: usize,
-) -> usize {
-    if bag_i == num_of_bags {
-        if desired == acc {
-            1
-        } else {
-            0
-        }
-    } else {
-        let mut ret = 0;
-        for ball in balls_by_bag.get(&bag_i).unwrap() {
-            ret += if is_overflow(acc, *ball) {
-                0
-            } else {
-                solve(num_of_bags, desired, balls_by_bag, bag_i + 1, acc * *ball)
-            };
-        }
-        ret
+        k = k >> 1;
     }
+    ret.chars().rev().collect()
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (n, x) = cin_vec::<usize>().to_2();
-    let balls_by_bag: HashMap<usize, Vec<usize>> = (0..n)
-        .map(|i| (i, cin_vec::<usize>().into_iter().skip(1).collect()))
-        .collect();
+    let k = cin().parse::<usize>().unwrap();
+    println!("{}", solve(k));
 
-    println!("{}", solve(n, x, &balls_by_bag, 0, 1));
     Ok(())
 }
